@@ -1,3 +1,1 @@
-# Fake-Backend-ops
-
-Projet fake_backend notification slack and shared library 
+# Fake-Backend-ops notification slack and shared library 
