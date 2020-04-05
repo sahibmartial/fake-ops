@@ -1,5 +1,5 @@
 ---
-fake_backend_source_repo: "git@github.com:sahibmartial/fake-backend-jenkins.git"
+fake_backend_source_repo: "https://github.com/sahibmartial/fake-backend.git"
 fake_backend_source_branch: "master"
 fake_backend_image_tag: "V2-projet4"
 

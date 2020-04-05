@@ -46,7 +46,7 @@
 
 - name: Build image and push it to Docker Hub
   docker_image:
-    path: "{{ home }}/application-battleboat"
+    path: "{{ home }}/application-battleboat/fake-backend"
     name: "{{ docker_hub_login }}/fake-backend"
     push: yes
     tag: "{{ fake_backend_image_tag }}"
