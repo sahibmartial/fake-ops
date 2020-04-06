@@ -19,6 +19,6 @@
           url: http://{{ ip_addr_prod }}:{{ port_app }}/health
           method: GET
         retries: 8
-        delay: 20
+        delay: 500
       tags:
         - prod
