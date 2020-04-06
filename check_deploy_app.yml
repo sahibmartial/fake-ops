@@ -12,13 +12,13 @@
         uri:
           url: http://{{ ip_addr_prod }}:{{ port_app }}
         retries: 8
-        delay: 20
+        delay: 100
 
       - name: Check webservice application production
         uri:
           url: http://{{ ip_addr_prod }}:{{ port_app }}/health
           method: GET
         retries: 8
-        delay: 500
+        delay: 100
       tags:
         - prod
