@@ -77,14 +77,32 @@ pipeline {
                        sh 'echo "${GIT_BRANCH}"'
                    }
                }
-               stage("Build docker images on build host") {
-                   when {
+			   stage("Build docker images on build host") {
+                  /* when {
                       expression { GIT_BRANCH == 'origin/master' }
-                  }
+                  }*/
                    steps {
                        sh 'ansible-playbook  -i hosts --vault-password-file vault.key --private-key id_rsa --tags "build" --limit build install_fake-backend.yml'
                    }
-               }		   
+               }
+			    /*step production branch dev*/
+			   stage("Deploy application in preproduction") {
+                   when {
+                      expression { GIT_BRANCH == 'origin/dev' }
+                  }
+                   steps {
+                       sh 'ansible-playbook  -i hosts --vault-password-file vault.key --private-key id_rsa --tags "preprod" --limit preprod install_fake-backend.yml'
+                   }
+               }
+			   stage("Ensure application is deployed in preproduction") {
+                  when {
+                      expression { GIT_BRANCH == 'origin/dev' }
+                  }
+                  steps {
+                      sh 'ansible-playbook  -i hosts --vault-password-file vault.key --tags "preprod" check_deploy_app.yml'
+                  }
+               }
+			   /*step production branch master*/
                stage("Deploy application in production") {
                    when {
                       expression { GIT_BRANCH == 'origin/master' }
