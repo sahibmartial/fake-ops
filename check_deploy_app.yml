@@ -22,6 +22,7 @@
         delay: 100
       tags:
         - preprod
+
     - block:
       - name: Check that you can connect to webpage
         uri:
