@@ -54,14 +54,15 @@ pipeline {
                 sh 'chmod 600 id_rsa'
             }
         }
-		stage('Test and deploy archi') {
-		     agent { docker { image 'registry.gitlab.com/robconnolly/docker-ansible:latest' } }
-			  stages {		  
+		
+		stage('Test and deploy the application in preproduction') {
+             agent { docker { image 'registry.gitlab.com/robconnolly/docker-ansible:latest' } }
+             stages {
                stage("Install ansible role dependencies") {
                    steps {
                        sh 'ansible-galaxy install -r roles/requirements.yml'
                    }
-               }                
+               }
                stage("Ping targeted hosts") {
                    steps {
                        sh 'ansible all -m ping -i hosts --private-key id_rsa'
@@ -72,23 +73,17 @@ pipeline {
                        sh 'ansible-lint -x 306 install_fake-backend.yml'
                        sh 'echo "${GIT_BRANCH}"'
                    }
-               }              
+               }
+
                stage("Build docker images on build host") {
-                 /*  when {
+                   when {
                       expression { GIT_BRANCH == 'origin/dev' }
-                   }*/
+                   }
                    steps {
                        sh 'ansible-playbook  -i hosts --vault-password-file vault.key --private-key id_rsa --tags "build" --limit build install_fake-backend.yml'
                    }
                }
-				
-             }		
-		
-		}
-		
-		stage('Test and deploy the application in preproduction') {
-             agent { docker { image 'registry.gitlab.com/robconnolly/docker-ansible:latest' } }
-             stages {                        
+
                stage("Deploy application in preproduction") {
                   when {
                       expression { GIT_BRANCH == 'origin/dev' }
@@ -97,6 +92,7 @@ pipeline {
                        sh 'ansible-playbook  -i hosts --vault-password-file vault.key --private-key id_rsa --tags "preprod" --limit preprod install_fake-backend.yml'
                    }
                }
+
                stage("Ensure application is deployed in preproduction") {
                   when {
                       expression { GIT_BRANCH == 'origin/dev' }
@@ -105,14 +101,39 @@ pipeline {
                       sh 'ansible-playbook  -i hosts --vault-password-file vault.key --tags "preprod" check_deploy_app.yml'
                   }
                 } 
-				
              }
-			 
           }
         
         stage('Test and deploy the application in production') {
             agent { docker { image 'registry.gitlab.com/robconnolly/docker-ansible:latest' } }
-            stages {                            
+            stages {
+               stage("Install ansible role dependencies") {
+                  
+                   steps {
+                       sh 'ansible-galaxy install -r roles/requirements.yml'
+                   }
+               }
+               stage("Ping targeted hosts") {
+                   
+                   steps {
+                       sh 'ansible all -m ping -i hosts --private-key id_rsa'
+                   }
+               }
+               stage("Verify ansible playbook syntax") {
+                  
+                   steps {
+                       sh 'ansible-lint -x 306 install_fake-backend.yml'
+                       sh 'echo "${GIT_BRANCH}"'
+                   }
+               }
+			   stage("Build docker images on build host") {
+                   when {
+                      expression { GIT_BRANCH == 'origin/master' }
+                  }
+                   steps {
+                       sh 'ansible-playbook  -i hosts --vault-password-file vault.key --private-key id_rsa --tags "build" --limit build install_fake-backend.yml'
+                   }
+               }
                stage("Deploy application in production") {
                    when {
                       expression { GIT_BRANCH == 'origin/master' }
